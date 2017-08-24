@@ -2,11 +2,14 @@
 <BaliProject version="3.2" title="lpcsniffer" device="LCMXO3LF-6900C-5BG256C" default_implementation="impl1">
     <Options/>
     <Implementation title="impl1" dir="impl1" description="impl1" synthesis="lse" default_strategy="Strategy1">
-        <Options def_top="LPC_Peri" top="top"/>
+        <Options def_top="top" top="top"/>
         <Source name="LPC_Peri.vhd" type="VHDL" type_short="VHDL">
-            <Options top_module="LPC_Peri"/>
+            <Options/>
         </Source>
         <Source name="top.vhd" type="VHDL" type_short="VHDL">
+            <Options top_module="top"/>
+        </Source>
+        <Source name="lpcbus.rvl" type="Reveal" type_short="Reveal">
             <Options/>
         </Source>
         <Source name="lpcsniffer.lpf" type="Logic Preference" type_short="LPF">
