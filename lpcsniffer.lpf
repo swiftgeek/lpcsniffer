@@ -1,2 +1,46 @@
 BLOCK RESETPATHS;
 BLOCK ASYNCPATHS;
+
+######################
+# XO3 Board          #
+######################
+
+LOCATE COMP "osc_12m" SITE "C8";
+FREQUENCY NET "osc_12m" 12.0MHz;
+
+LOCATE COMP "leds[0]" SITE "H11";
+LOCATE COMP "leds[1]" SITE "J13";
+LOCATE COMP "leds[2]" SITE "J11";
+LOCATE COMP "leds[3]" SITE "L12";
+LOCATE COMP "leds[4]" SITE "K11";
+LOCATE COMP "leds[5]" SITE "L13";
+LOCATE COMP "leds[6]" SITE "N15";
+LOCATE COMP "leds[7]" SITE "P16";
+
+LOCATE COMP "dips[0]" SITE "N2";
+LOCATE COMP "dips[1]" SITE "P1";
+LOCATE COMP "dips[2]" SITE "M3";
+LOCATE COMP "dips[3]" SITE "N1";
+
+######################
+# LPC port           #
+######################
+
+LOCATE COMP "pciclk" SITE "T7";
+FREQUENCY NET "pciclk" 33.0MHz;
+
+LOCATE COMP "frame" SITE "T9";
+LOCATE COMP "pcirst_n" SITE "R9";
+
+IOBUF PORT "pciclk" IO_TYPE=LVCMOS33;
+IOBUF PORT "frame" IO_TYPE=LVCMOS33;
+IOBUF PORT "pcirst_n" IO_TYPE=LVCMOS33;
+
+LOCATE COMP "lad[0]" SITE "M8";
+LOCATE COMP "lad[1]" SITE "N9";
+LOCATE COMP "lad[2]" SITE "R10";
+LOCATE COMP "lad[3]" SITE "P10";
+IOBUF PORT "lad[0]" IO_TYPE=LVCMOS33;
+IOBUF PORT "lad[1]" IO_TYPE=LVCMOS33;
+IOBUF PORT "lad[2]" IO_TYPE=LVCMOS33;
+IOBUF PORT "lad[3]" IO_TYPE=LVCMOS33;
