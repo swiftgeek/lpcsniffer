@@ -1,6 +1,8 @@
 rvl_alias "pciclk" "pciclk";
+
 BLOCK RESETPATHS;
 BLOCK ASYNCPATHS;
+BLOCK JTAGPATHS;
 
 ######################
 # XO3 Board          #
@@ -45,4 +47,12 @@ IOBUF PORT "lad[0]" IO_TYPE=LVCMOS33;
 IOBUF PORT "lad[1]" IO_TYPE=LVCMOS33;
 IOBUF PORT "lad[2]" IO_TYPE=LVCMOS33;
 IOBUF PORT "lad[3]" IO_TYPE=LVCMOS33;
-BLOCK JTAGPATHS;
+
+######################
+# Serial port        #
+######################
+
+LOCATE COMP "rxd" SITE "D14";
+LOCATE COMP "txd" SITE "D16";
+IOBUF PORT "rxd" IO_TYPE=LVCMOS33;
+IOBUF PORT "txd" IO_TYPE=LVCMOS33;

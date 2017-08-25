@@ -24,7 +24,11 @@ port
   pciclk : in std_logic;
   frame  : in std_logic;
   pcirst_n : in std_logic;
-  lad : inout std_logic_vector(3 downto 0)
+  lad : inout std_logic_vector(3 downto 0);
+
+  --UART
+  rxd : in std_logic;
+  txd : out std_logic
 );
 end entity;
 
@@ -56,6 +60,25 @@ Architecture top_1 of top is
   );
   end component LPC_Peri;
 
+  component uartTop
+    port ( -- global signals
+     clr : in  std_logic;                     -- global reset input
+     clk : in  std_logic;                     -- global clock input
+                                                    -- uart serial signals
+     serIn  : in  std_logic;                     -- serial data input
+     serOut : out std_logic;                     -- serial data output
+                                                    -- transmit and receive internal interface signals
+     txData    : in  std_logic_vector(7 downto 0);  -- data byte to transmit
+     newTxData : in  std_logic;                     -- asserted to indicate that there is a new data byte for transmission
+     txBusy    : out std_logic;                     -- signs that transmitter is busy
+     rxData    : out std_logic_vector(7 downto 0);  -- data byte received
+     newRxData : out std_logic;                     -- signs that a new byte was received
+                                                    -- baud rate configuration register - see baudGen.vhd for details
+     baudFreq  : in  std_logic_vector(11 downto 0); -- baud rate setting registers - see header description
+     baudLimit : in  std_logic_vector(15 downto 0); -- baud rate setting registers - see header description
+     baudClk   : out std_logic);                    -- 
+  end component uartTop;
+
   signal lpc_state : std_logic_vector(4 downto 0);
   signal lpc_addr : std_logic_vector(15 downto 0);
   signal lpc_din : std_logic_vector(7 downto 0);
@@ -66,16 +89,34 @@ Architecture top_1 of top is
 
   signal osc_12m_tgl, osc_pci_tgl : std_logic := '0';
 
+  signal ser_txd, ser_rxd : std_logic_vector(7 downto 0);
+  signal ser_tx_valid, ser_rx_valid : std_logic;
+  signal ser_busy : std_logic;
+
+  type state_t is (st0_idle, st1_type, st2_d0, st3_d1, st4_lf);
+  signal state : state_t;
+
+  signal buf_addr : std_logic_vector(15 downto 0);
+  signal buf_din : std_logic_vector(7 downto 0);
+  signal buf_rd, buf_wr : std_logic;
+
+  signal pcirst : std_logic;
+
 begin
 
   frame_n <= not frame;
+  pcirst  <= not pcirst_n;
 
   --LED Mappings
   leds(0) <= osc_12m_tgl;
   leds(1) <= osc_pci_tgl;
 
   leds(2) <= not (lpc_en and (io_rden_sm or io_wren_sm));
-  leds(7 downto 3) <= not lpc_state;
+  leds(3) <= '1' when (lpc_state = b"00000") else '0';
+
+  leds(4) <= '1' when (state = st0_idle) else '0';
+
+  leds(7 downto 5) <= "111";
 
   --LPC Peripheral
   lpc_per : LPC_Peri
@@ -98,7 +139,6 @@ begin
     io_rden_sm => io_rden_sm,
     io_wren_sm => io_wren_sm
   );
-
 
   process (osc_12m)
     variable cnt : integer;
@@ -126,6 +166,82 @@ begin
           osc_pci_tgl <= not osc_pci_tgl;
         else
           cnt := cnt + 1;
+        end if;
+      end if;
+    end if;
+  end process;
+
+  --UART Peripheral
+  uart_per : uartTop
+  port map
+  (
+    clr => pcirst,
+    clk => pciclk,
+
+    serIn  => rxd,
+    serOut => txd,
+
+    txData    => ser_txd,
+    newTxData => ser_tx_valid,
+    txBusy    => ser_busy,
+
+    rxData    => ser_rxd,
+    newRxData => ser_rx_valid,
+
+    --for 115,200 from a 33MHz clock
+    baudFreq  => x"180",
+    baudLimit => x"195b",
+    baudClk => open
+  );
+
+  process (pciclk, pcirst_n)
+  begin
+    if (rising_edge(pciclk)) then
+      if (pcirst_n = '0') then
+        state <= st0_idle;
+
+        ser_tx_valid <= '0';
+        ser_txd      <= x"00";
+      else
+        ser_tx_valid <= '0';
+
+        if (not ser_busy) then
+          case (state) is
+            when st0_idle =>
+              if (lpc_en) then
+                state <= st1_type;
+
+                buf_addr <= lpc_addr;
+                buf_din  <= lpc_din;
+                buf_rd   <= io_rden_sm;
+                buf_wr   <= io_wren_sm;
+
+                ser_tx_valid <= '1';
+                ser_txd      <= x"52" when io_rden_sm = '1' else --'R'
+                                x"54" when io_wren_sm = '1' else --'W'
+                                x"3f"; -- '?'
+              end if;
+            when st1_type =>
+              state <= st2_d0;
+
+              ser_tx_valid <= '1';
+              ser_txd      <= buf_addr(15 downto 8);
+            when st2_d0 =>
+              state <= st3_d1;
+
+              ser_tx_valid <= '1';
+              ser_txd      <= buf_addr(7 downto 0);
+            when st3_d1 =>
+              state <= st4_lf;
+
+              ser_tx_valid <= '1';
+              ser_txd      <= buf_din;
+            when st4_lf =>
+              state <= st0_idle;
+
+              ser_tx_valid <= '1';
+              ser_txd      <= x"0a"; --'LF'
+          end case;
         end if;
       end if;
     end if;
