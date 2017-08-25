@@ -1,17 +1,29 @@
-<Project ModBy="Inserter" SigType="0" Name="/scratch/projects/lpcsniffer/lpcbus.rvl" Date="2017-08-24">
+<Project ModBy="Inserter" SigType="0" Name="/scratch/projects/lpcsniffer/lpcbus.rvl" Date="2017-08-25">
     <IP Version="1_5_062609"/>
     <Design DesignEntry="Schematic/VHDL" Synthesis="lse" DeviceFamily="MachXO3LF" DesignName="lpcsniffer"/>
-    <Core InsertDataset="0" Insert="1" Reveal_sig="103904150" Name="top_LA0" ID="0">
+    <Core InsertDataset="0" Insert="1" Reveal_sig="103943443" Name="top_LA0" ID="0">
         <Setting>
             <Clock SampleClk="pciclk" SampleEnable="0" EnableClk="" EnableClk_Pri="0"/>
-            <TraceBuffer Implementation="0" BitTimeStamp="0" hasTimeStamp="0" IncTrigSig="0" BufferDepth="1024"/>
+            <TraceBuffer Implementation="0" BitTimeStamp="0" hasTimeStamp="0" IncTrigSig="0" BufferDepth="128"/>
             <Capture Mode="1" MinSamplesPerTrig="32"/>
-            <Event CntEnable="1" MaxEventCnt="8"/>
+            <Event CntEnable="0" MaxEventCnt="8"/>
             <TrigOut Polarity="0" MinPulseWidth="0" TrigOutNetType="1" EnableTrigOut="0" TrigOutNet="reveal_debug_top_LA0_net"/>
             <DistRAM Disable="0"/>
         </Setting>
         <Dataset Name="Base">
             <Trace>
+                <Sig Type="SIG" Name="pcirst_n"/>
+                <Sig Type="SIG" Name="frame"/>
+                <Sig Type="SIG" Name="frame_n"/>
+                <Bus Name="lad">
+                    <Sig Type="SIG" Name="lad:0"/>
+                    <Sig Type="SIG" Name="lad:1"/>
+                    <Sig Type="SIG" Name="lad:2"/>
+                    <Sig Type="SIG" Name="lad:3"/>
+                </Bus>
+                <Sig Type="SIG" Name="lpc_en"/>
+                <Sig Type="SIG" Name="io_rden_sm"/>
+                <Sig Type="SIG" Name="io_wren_sm"/>
                 <Bus Name="lpc_state">
                     <Sig Type="SIG" Name="lpc_state:0"/>
                     <Sig Type="SIG" Name="lpc_state:1"/>
@@ -19,7 +31,6 @@
                     <Sig Type="SIG" Name="lpc_state:3"/>
                     <Sig Type="SIG" Name="lpc_state:4"/>
                 </Bus>
-                <Sig Type="SIG" Name="lpc_en"/>
                 <Bus Name="lpc_addr">
                     <Sig Type="SIG" Name="lpc_addr:0"/>
                     <Sig Type="SIG" Name="lpc_addr:1"/>
@@ -38,7 +49,6 @@
                     <Sig Type="SIG" Name="lpc_addr:14"/>
                     <Sig Type="SIG" Name="lpc_addr:15"/>
                 </Bus>
-                <Sig Type="SIG" Name="io_wren_sm"/>
                 <Bus Name="lpc_din">
                     <Sig Type="SIG" Name="lpc_din:0"/>
                     <Sig Type="SIG" Name="lpc_din:1"/>
@@ -49,7 +59,6 @@
                     <Sig Type="SIG" Name="lpc_din:6"/>
                     <Sig Type="SIG" Name="lpc_din:7"/>
                 </Bus>
-                <Sig Type="SIG" Name="io_rden_sm"/>
                 <Bus Name="lpc_dout">
                     <Sig Type="SIG" Name="lpc_dout:0"/>
                     <Sig Type="SIG" Name="lpc_dout:1"/>
@@ -59,7 +68,11 @@
             </Trace>
             <Trigger>
                 <TU Serialbits="0" Type="0" ID="1" Sig="lpc_en,"/>
-                <TE MaxSequence="2" MaxEvnCnt="8" ID="1" Resource="0"/>
+                <TU Serialbits="0" Type="0" ID="2" Sig="(BUS)lpc_state[4:0],"/>
+                <TU Serialbits="0" Type="0" ID="3" Sig="frame,"/>
+                <TE MaxSequence="2" MaxEvnCnt="1" ID="1" Resource="0"/>
+                <TE MaxSequence="2" MaxEvnCnt="1" ID="2" Resource="0"/>
+                <TE MaxSequence="2" MaxEvnCnt="1" ID="3" Resource="0"/>
             </Trigger>
         </Dataset>
     </Core>

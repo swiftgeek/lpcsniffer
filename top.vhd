@@ -62,13 +62,20 @@ Architecture top_1 of top is
   signal lpc_dout : std_logic_vector(3 downto 0);
   signal lpc_en, io_rden_sm, io_wren_sm : std_logic;
 
+  signal frame_n : std_logic;
+
   signal osc_12m_tgl, osc_pci_tgl : std_logic := '0';
 
 begin
 
+  frame_n <= not frame;
+
   --LED Mappings
   leds(0) <= osc_12m_tgl;
   leds(1) <= osc_pci_tgl;
+
+  leds(2) <= not (lpc_en and (io_rden_sm or io_wren_sm));
+  leds(7 downto 3) <= not lpc_state;
 
   --LPC Peripheral
   lpc_per : LPC_Peri
