@@ -105,7 +105,7 @@ Architecture top_1 of top is
       return std_logic_vector(unsigned'(x"30") + unsigned(X));
     else
     --for X in 10 to 15, ascii codes 0x41-0x46
-      return std_logic_vector(unsigned'(x"41") + unsigned(X));
+      return std_logic_vector(unsigned'(x"41") + unsigned(X) - unsigned'(x"0a"));
     end if;
   end nibble_to_hex;
 
