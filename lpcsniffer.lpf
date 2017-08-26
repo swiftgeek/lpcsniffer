@@ -9,7 +9,6 @@ BLOCK JTAGPATHS;
 ######################
 
 LOCATE COMP "osc_12m" SITE "C8";
-FREQUENCY NET "osc_12m" 12.0MHz;
 
 LOCATE COMP "leds[0]" SITE "H11";
 LOCATE COMP "leds[1]" SITE "J13";
@@ -38,7 +37,6 @@ LOCATE COMP "dips[3]" SITE "N1";
 ######################
 
 LOCATE COMP "pciclk" SITE "T7";
-FREQUENCY NET "pciclk" 33.0MHz;
 
 LOCATE COMP "frame" SITE "R9";
 LOCATE COMP "pcirst_n" SITE "T10";
