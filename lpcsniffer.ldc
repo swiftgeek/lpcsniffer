@@ -7,8 +7,9 @@
 # for assigning design logic to physical resources) for back-end flow.
 ################################################
 
-create_clock -period 30.030302 -name osc_pci [ get_ports { pciclk } ]
 create_clock -period 83.333336 -name osc_12m [ get_ports { osc_12m } ]
+create_clock -period 30.030302 -name osc_pci [ get_ports { pciclk } ]
+create_clock -period 42.000000 -name jtag [ get_nets { top_reveal_coretop_instance/jtck[0] } ]
 
 ################################################
 # This section describes the HDL Attributes that are supported
