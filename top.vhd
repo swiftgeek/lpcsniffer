@@ -193,7 +193,7 @@ begin
     baudClk => open
   );
 
-  process (all)
+  process (pciclk, pcirst_n_sync)
     variable cnt : integer range 0 to 7;
   begin
     if (pcirst_n_sync = '0') then

@@ -45,7 +45,7 @@ Architecture lpcDecoder_1 of lpcDecoder is
 begin
 
   --Follows spec 1.0 section 4.2.1.x
-  process (all)
+  process (lclk, lreset_n)
   begin
     if (lreset_n = '0') then
       state <= st_idle;
