@@ -80,7 +80,7 @@ Architecture top_1 of top is
   signal ser_tx_valid, ser_rx_valid : std_logic;
   signal ser_busy, ser_busy_r : std_logic;
 
-  type state_t is (st0_idle, st1_addr, st2_sep, st3_data, st4_lf);
+  type state_t is (st0_idle, st0_wait, st1_addr, st2_sep, st3_data, st4_lf);
   signal state : state_t;
 
   signal t_valid : std_logic;
@@ -91,12 +91,24 @@ Architecture top_1 of top is
 
   signal buf_addr : std_logic_vector(15 downto 0);
   signal buf_data : std_logic_vector(7 downto 0);
+  signal buf_type : lpc_type_t;
 
   signal pcirst : std_logic;
 
+  --extra sync on reset line to reduce external influence
+  signal pcirst_n_r, pcirst_n_sync : std_logic;
+
 begin
 
-  pcirst  <= not pcirst_n;
+  process (pciclk, pcirst_n)
+  begin
+    if (rising_edge(pciclk)) then
+      pcirst_n_r    <= pcirst_n;
+      pcirst_n_sync <= pcirst_n_r;
+    end if;
+  end process;
+
+  pcirst  <= not pcirst_n_sync;
 
   --LED Mappings
   leds(0) <= osc_12m_tgl;
@@ -115,7 +127,7 @@ begin
   (
     --external
     lclk     => pciclk,
-    lreset_n => pcirst_n,
+    lreset_n => pcirst_n_sync,
     lframe_n => frame,
     lad      => lad,
 
@@ -140,10 +152,10 @@ begin
     end if;
   end process;
 
-  process (pciclk, pcirst_n)
+  process (pciclk, pcirst_n_sync)
     variable cnt : integer;
   begin
-    if (pcirst_n = '0') then
+    if (pcirst_n_sync = '0') then
       osc_pci_tgl <= '0';
       cnt := 0;
     else
@@ -181,10 +193,10 @@ begin
     baudClk => open
   );
 
-  process (pciclk, pcirst_n)
+  process (all)
     variable cnt : integer range 0 to 7;
   begin
-    if (pcirst_n = '0') then
+    if (pcirst_n_sync = '0') then
       state <= st0_idle;
 
       ser_tx_valid <= '0';
@@ -199,16 +211,29 @@ begin
       case (state) is
         when st0_idle =>
           if (t_valid and not ser_busy) then
-            state <= st1_addr;
+            state <= st0_wait;
 
             buf_addr <= t_addr;
             buf_data <= t_data;
+            buf_type <= t_type;
 
-            ser_tx_valid <= '1';
-            ser_txd      <= x"52" when t_type = IO_RD else --'R'
-                            x"57" when t_type = IO_WR else --'W'
-                            x"3f"; -- '?'
+          end if;
+
+        when st0_wait =>
+          if (ser_busy and not ser_busy_r) then
+            state <= st1_addr;
             cnt := 0;
+          end if;
+
+          if (not ser_busy) then
+            ser_tx_valid <= '1';
+            ser_txd      <= x"52" when buf_type = IO_RD else  --'R'
+                            x"57" when buf_type = IO_WR else  --'W'
+                            x"4d" when buf_type = MEM_RD else --'M'
+                            x"4e" when buf_type = MEM_WR else --'N'
+                            x"44" when buf_type = DMA_RD else --'D'
+                            x"45" when buf_type = DMA_WR else --'E'
+                            x"3f"; -- '?'
           end if;
 
         when st1_addr =>
