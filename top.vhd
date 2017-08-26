@@ -51,7 +51,7 @@ Architecture top_1 of top is
     trans_valid : out std_logic;
     trans_start : out lpc_start_t;
     trans_type  : out lpc_type_t;
-    trans_addr  : out std_logic_vector(15 downto 0);
+    trans_addr  : out std_logic_vector(31 downto 0);
     trans_data  : out std_logic_vector(7 downto 0)
   );
   end component lpcDecoder;
@@ -87,12 +87,13 @@ Architecture top_1 of top is
   signal t_valid : std_logic;
   signal t_start : lpc_start_t;
   signal t_type  : lpc_type_t;
-  signal t_addr  : std_logic_vector(15 downto 0);
+  signal t_addr  : std_logic_vector(31 downto 0);
   signal t_data  : std_logic_vector(7 downto 0);
 
-  signal buf_addr : std_logic_vector(15 downto 0);
+  signal buf_addr : std_logic_vector(31 downto 0);
   signal buf_data : std_logic_vector(7 downto 0);
   signal buf_type : lpc_type_t;
+  signal buf_is_io, buf_is_mem : std_logic;
 
   signal pcirst : std_logic;
 
@@ -219,6 +220,9 @@ begin
     baudClk => open
   );
 
+  buf_is_io  <= '1' when (buf_type = IO_RD or buf_type = IO_WR) else '0';
+  buf_is_mem <= '1' when (buf_type = MEM_RD or buf_type = MEM_WR) else '0';
+
   process (pciclk, pcirst_n_sync, crst_n_sync)
     variable cnt : integer range 0 to 7;
   begin
@@ -264,11 +268,11 @@ begin
 
         when st1_addr =>
           if (ser_busy and not ser_busy_r) then
-            if (cnt = 3) then
+            if ((buf_is_io = '1' and cnt = 3) or (buf_is_mem = '1' and cnt = 7)) then
               state <= st2_sep;
               cnt   := 0;
             else
-              buf_addr(15 downto 4) <= buf_addr(11 downto 0);
+              buf_addr(31 downto 4) <= buf_addr(27 downto 0);
               buf_addr(3 downto 0)  <= "0000";
               cnt := cnt + 1;
             end if;
@@ -276,7 +280,11 @@ begin
 
           if (not ser_busy) then
             ser_tx_valid <= '1';
-            ser_txd      <= nibble_to_hex(buf_addr(15 downto 12));
+            if (buf_is_io) then
+              ser_txd <= nibble_to_hex(buf_addr(15 downto 12));
+            else
+              ser_txd <= nibble_to_hex(buf_addr(31 downto 28));
+            end if;
           end if;
 
         when st2_sep =>

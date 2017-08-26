@@ -27,7 +27,7 @@
         <Source name="impl1/impl1.xcf" type="Programming Project File" type_short="Programming">
             <Options/>
         </Source>
-        <Source name="lpcbus.rvl" type="Reveal" type_short="Reveal" excluded="TRUE">
+        <Source name="lpcbus.rvl" type="Reveal" type_short="Reveal">
             <Options/>
         </Source>
         <Source name="lpcsniffer.ldc" type="LSE Design Constraints File" type_short="LDC">
