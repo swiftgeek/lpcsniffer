@@ -98,6 +98,17 @@ Architecture top_1 of top is
   --extra sync on reset line to reduce external influence
   signal pcirst_n_r, pcirst_n_sync : std_logic;
 
+  function nibble_to_hex (X : std_logic_vector(3 downto 0)) return std_logic_vector(7 downto 0) is
+  begin
+    if (unsigned(X) < 9) then
+      --for X in to 9, ascii codes 0x30-0x39
+      return std_logic_vector(unsigned'(x"30") + unsigned(X));
+    else
+    --for X in 10 to 15, ascii codes 0x41-0x46
+      return std_logic_vector(unsigned'(x"41") + unsigned(X));
+    end if;
+  end nibble_to_hex;
+
 begin
 
   process (pciclk, pcirst_n)
@@ -250,7 +261,7 @@ begin
 
           if (not ser_busy) then
             ser_tx_valid <= '1';
-            ser_txd      <= std_logic_vector(unsigned'(x"30") + unsigned(buf_addr(15 downto 12)));
+            ser_txd      <= nibble_to_hex(buf_addr(15 downto 12));
           end if;
 
         when st2_sep =>
@@ -277,7 +288,7 @@ begin
 
           if (not ser_busy) then
             ser_tx_valid <= '1';
-            ser_txd      <= std_logic_vector(unsigned'(x"30") + unsigned(buf_data(7 downto 4)));
+            ser_txd      <= nibble_to_hex(buf_data(7 downto 4));
           end if;
 
         when st4_lf =>
