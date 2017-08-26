@@ -102,7 +102,7 @@ Architecture top_1 of top is
 
   function nibble_to_hex (X : std_logic_vector(3 downto 0)) return std_logic_vector(7 downto 0) is
   begin
-    if (unsigned(X) < 9) then
+    if (unsigned(X) < 10) then
       --for X in to 9, ascii codes 0x30-0x39
       return std_logic_vector(unsigned'(x"30") + unsigned(X));
     else
