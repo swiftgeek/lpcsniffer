@@ -1,10 +1,10 @@
 <Project ModBy="Inserter" SigType="0" Name="/scratch/projects/lpcsniffer/lpcbus.rvl" Date="2017-08-26">
     <IP Version="1_5_062609"/>
     <Design DesignEntry="Schematic/VHDL" Synthesis="lse" DeviceFamily="MachXO3LF" DesignName="lpcsniffer"/>
-    <Core InsertDataset="0" Insert="1" Reveal_sig="104148681" Name="top_LA0" ID="0">
+    <Core InsertDataset="0" Insert="1" Reveal_sig="104150376" Name="top_LA0" ID="0">
         <Setting>
             <Clock SampleClk="pciclk" SampleEnable="0" EnableClk="" EnableClk_Pri="0"/>
-            <TraceBuffer Implementation="0" BitTimeStamp="0" hasTimeStamp="0" IncTrigSig="0" BufferDepth="2048"/>
+            <TraceBuffer Implementation="0" BitTimeStamp="0" hasTimeStamp="0" IncTrigSig="0" BufferDepth="4096"/>
             <Capture Mode="0" MinSamplesPerTrig="32"/>
             <Event CntEnable="0" MaxEventCnt="8"/>
             <TrigOut Polarity="0" MinPulseWidth="0" TrigOutNetType="1" EnableTrigOut="0" TrigOutNet="reveal_debug_top_LA0_net"/>
@@ -12,7 +12,7 @@
         </Setting>
         <Dataset Name="Base">
             <Trace>
-                <Sig Type="SIG" Name="pcirst_n"/>
+                <Sig Type="SIG" Name="pcirst_n_sync"/>
                 <Sig Type="SIG" Name="frame"/>
                 <Bus Name="lad">
                     <Sig Type="SIG" Name="lad:0"/>
@@ -28,7 +28,6 @@
                 <Bus Name="lpc_per/cnt">
                     <Sig Type="SIG" Name="lpc_per/cnt:0"/>
                     <Sig Type="SIG" Name="lpc_per/cnt:1"/>
-                    <Sig Type="SIG" Name="lpc_per/cnt:2"/>
                 </Bus>
                 <Sig Type="SIG" Name="t_valid"/>
                 <Bus Name="t_start">
