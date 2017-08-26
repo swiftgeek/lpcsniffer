@@ -116,7 +116,7 @@ begin
 
   leds(4) <= '1' when (state = st0_idle) else '0';
 
-  leds(7 downto 5) <= "111";
+  leds(7 downto 5) <= "101";
 
   --LPC Peripheral
   lpc_per : LPC_Peri
@@ -156,11 +156,11 @@ begin
   process (pciclk, pcirst_n)
     variable cnt : integer;
   begin
-    if (rising_edge(pciclk)) then
-      if (pcirst_n = '0') then
-        osc_pci_tgl <= '0';
-        cnt := 0;
-      else
+    if (pcirst_n = '0') then
+      osc_pci_tgl <= '0';
+      cnt := 0;
+    else
+      if (rising_edge(pciclk)) then
         if (cnt = (33*1000*1000/2-1)) then
           cnt := 0;
           osc_pci_tgl <= not osc_pci_tgl;
@@ -196,13 +196,13 @@ begin
 
   process (pciclk, pcirst_n)
   begin
-    if (rising_edge(pciclk)) then
-      if (pcirst_n = '0') then
-        state <= st0_idle;
+    if (pcirst_n = '0') then
+      state <= st0_idle;
 
-        ser_tx_valid <= '0';
-        ser_txd      <= x"00";
-      else
+      ser_tx_valid <= '0';
+      ser_txd      <= x"00";
+    else
+      if (rising_edge(pciclk)) then
         ser_tx_valid <= '0';
 
         if (not ser_busy) then
