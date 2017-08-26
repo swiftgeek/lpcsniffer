@@ -1,10 +1,10 @@
 <Project ModBy="Inserter" SigType="0" Name="/scratch/projects/lpcsniffer/lpcbus.rvl" Date="2017-08-26">
     <IP Version="1_5_062609"/>
     <Design DesignEntry="Schematic/VHDL" Synthesis="lse" DeviceFamily="MachXO3LF" DesignName="lpcsniffer"/>
-    <Core InsertDataset="0" Insert="1" Reveal_sig="104074405" Name="top_LA0" ID="0">
+    <Core InsertDataset="0" Insert="1" Reveal_sig="104135889" Name="top_LA0" ID="0">
         <Setting>
             <Clock SampleClk="pciclk" SampleEnable="0" EnableClk="" EnableClk_Pri="0"/>
-            <TraceBuffer Implementation="0" BitTimeStamp="0" hasTimeStamp="0" IncTrigSig="0" BufferDepth="128"/>
+            <TraceBuffer Implementation="0" BitTimeStamp="0" hasTimeStamp="0" IncTrigSig="0" BufferDepth="1024"/>
             <Capture Mode="0" MinSamplesPerTrig="32"/>
             <Event CntEnable="0" MaxEventCnt="8"/>
             <TrigOut Polarity="0" MinPulseWidth="0" TrigOutNetType="1" EnableTrigOut="0" TrigOutNet="reveal_debug_top_LA0_net"/>
@@ -13,57 +13,53 @@
         <Dataset Name="Base">
             <Trace>
                 <Sig Type="SIG" Name="pcirst_n"/>
-                <Sig Type="SIG" Name="frame"/>
-                <Sig Type="SIG" Name="frame_n"/>
-                <Bus Name="lad">
-                    <Sig Type="SIG" Name="lad:0"/>
-                    <Sig Type="SIG" Name="lad:1"/>
-                    <Sig Type="SIG" Name="lad:2"/>
-                    <Sig Type="SIG" Name="lad:3"/>
+                <Bus Name="lpc_per/state">
+                    <Sig Type="SIG" Name="lpc_per/state:0"/>
+                    <Sig Type="SIG" Name="lpc_per/state:1"/>
+                    <Sig Type="SIG" Name="lpc_per/state:2"/>
                 </Bus>
-                <Sig Type="SIG" Name="lpc_en"/>
-                <Sig Type="SIG" Name="io_rden_sm"/>
-                <Sig Type="SIG" Name="io_wren_sm"/>
-                <Bus Name="lpc_state">
-                    <Sig Type="SIG" Name="lpc_state:0"/>
-                    <Sig Type="SIG" Name="lpc_state:1"/>
-                    <Sig Type="SIG" Name="lpc_state:2"/>
-                    <Sig Type="SIG" Name="lpc_state:3"/>
-                    <Sig Type="SIG" Name="lpc_state:4"/>
+                <Bus Name="lpc_per/cnt">
+                    <Sig Type="SIG" Name="lpc_per/cnt:0"/>
+                    <Sig Type="SIG" Name="lpc_per/cnt:1"/>
+                    <Sig Type="SIG" Name="lpc_per/cnt:2"/>
                 </Bus>
-                <Bus Name="lpc_addr">
-                    <Sig Type="SIG" Name="lpc_addr:0"/>
-                    <Sig Type="SIG" Name="lpc_addr:1"/>
-                    <Sig Type="SIG" Name="lpc_addr:2"/>
-                    <Sig Type="SIG" Name="lpc_addr:3"/>
-                    <Sig Type="SIG" Name="lpc_addr:4"/>
-                    <Sig Type="SIG" Name="lpc_addr:5"/>
-                    <Sig Type="SIG" Name="lpc_addr:6"/>
-                    <Sig Type="SIG" Name="lpc_addr:7"/>
-                    <Sig Type="SIG" Name="lpc_addr:8"/>
-                    <Sig Type="SIG" Name="lpc_addr:9"/>
-                    <Sig Type="SIG" Name="lpc_addr:10"/>
-                    <Sig Type="SIG" Name="lpc_addr:11"/>
-                    <Sig Type="SIG" Name="lpc_addr:12"/>
-                    <Sig Type="SIG" Name="lpc_addr:13"/>
-                    <Sig Type="SIG" Name="lpc_addr:14"/>
-                    <Sig Type="SIG" Name="lpc_addr:15"/>
+                <Sig Type="SIG" Name="t_valid"/>
+                <Bus Name="t_start">
+                    <Sig Type="SIG" Name="t_start:0"/>
+                    <Sig Type="SIG" Name="t_start:1"/>
                 </Bus>
-                <Bus Name="lpc_din">
-                    <Sig Type="SIG" Name="lpc_din:0"/>
-                    <Sig Type="SIG" Name="lpc_din:1"/>
-                    <Sig Type="SIG" Name="lpc_din:2"/>
-                    <Sig Type="SIG" Name="lpc_din:3"/>
-                    <Sig Type="SIG" Name="lpc_din:4"/>
-                    <Sig Type="SIG" Name="lpc_din:5"/>
-                    <Sig Type="SIG" Name="lpc_din:6"/>
-                    <Sig Type="SIG" Name="lpc_din:7"/>
+                <Bus Name="t_type">
+                    <Sig Type="SIG" Name="t_type:0"/>
+                    <Sig Type="SIG" Name="t_type:1"/>
+                    <Sig Type="SIG" Name="t_type:2"/>
                 </Bus>
-                <Bus Name="lpc_dout">
-                    <Sig Type="SIG" Name="lpc_dout:0"/>
-                    <Sig Type="SIG" Name="lpc_dout:1"/>
-                    <Sig Type="SIG" Name="lpc_dout:2"/>
-                    <Sig Type="SIG" Name="lpc_dout:3"/>
+                <Bus Name="t_addr">
+                    <Sig Type="SIG" Name="t_addr:0"/>
+                    <Sig Type="SIG" Name="t_addr:1"/>
+                    <Sig Type="SIG" Name="t_addr:2"/>
+                    <Sig Type="SIG" Name="t_addr:3"/>
+                    <Sig Type="SIG" Name="t_addr:4"/>
+                    <Sig Type="SIG" Name="t_addr:5"/>
+                    <Sig Type="SIG" Name="t_addr:6"/>
+                    <Sig Type="SIG" Name="t_addr:7"/>
+                    <Sig Type="SIG" Name="t_addr:8"/>
+                    <Sig Type="SIG" Name="t_addr:9"/>
+                    <Sig Type="SIG" Name="t_addr:10"/>
+                    <Sig Type="SIG" Name="t_addr:11"/>
+                    <Sig Type="SIG" Name="t_addr:12"/>
+                    <Sig Type="SIG" Name="t_addr:13"/>
+                    <Sig Type="SIG" Name="t_addr:14"/>
+                    <Sig Type="SIG" Name="t_addr:15"/>
+                </Bus>
+                <Bus Name="t_data">
+                    <Sig Type="SIG" Name="t_data:0"/>
+                    <Sig Type="SIG" Name="t_data:1"/>
+                    <Sig Type="SIG" Name="t_data:2"/>
+                    <Sig Type="SIG" Name="t_data:3"/>
+                    <Sig Type="SIG" Name="t_data:4"/>
+                    <Sig Type="SIG" Name="t_data:5"/>
+                    <Sig Type="SIG" Name="t_data:6"/>
+                    <Sig Type="SIG" Name="t_data:7"/>
                 </Bus>
                 <Bus Name="state">
                     <Sig Type="SIG" Name="state:0"/>
@@ -84,32 +80,10 @@
                 </Bus>
             </Trace>
             <Trigger>
-                <TU Serialbits="0" Type="0" ID="1" Sig="lpc_en,"/>
-                <TU Serialbits="0" Type="0" ID="2" Sig="(BUS)lpc_state[4:0],"/>
-                <TU Serialbits="0" Type="0" ID="3" Sig="frame,"/>
+                <TU Serialbits="0" Type="0" ID="1" Sig="(BUS)lpc_per/state[2:0],"/>
+                <TU Serialbits="0" Type="0" ID="2" Sig="frame,"/>
                 <TE MaxSequence="2" MaxEvnCnt="1" ID="1" Resource="0"/>
                 <TE MaxSequence="2" MaxEvnCnt="1" ID="2" Resource="0"/>
-                <TE MaxSequence="2" MaxEvnCnt="1" ID="3" Resource="0"/>
-            </Trigger>
-        </Dataset>
-    </Core>
-    <Core InsertDataset="0" Insert="1" Reveal_sig="104074406" Name="top_LA1" ID="1">
-        <Setting>
-            <Clock SampleClk="osc_12m" SampleEnable="0" EnableClk="" EnableClk_Pri="0"/>
-            <TraceBuffer Implementation="0" BitTimeStamp="0" hasTimeStamp="0" IncTrigSig="0" BufferDepth="256"/>
-            <Capture Mode="0" MinSamplesPerTrig="8"/>
-            <Event CntEnable="0" MaxEventCnt="8"/>
-            <TrigOut Polarity="0" MinPulseWidth="0" TrigOutNetType="1" EnableTrigOut="0" TrigOutNet="reveal_debug_top_LA1_net"/>
-            <DistRAM Disable="0"/>
-        </Setting>
-        <Dataset Name="Base">
-            <Trace>
-                <Sig Type="SIG" Name="osc_12m_tgl"/>
-                <Sig Type="SIG" Name="pcirst_n"/>
-            </Trace>
-            <Trigger>
-                <TU Serialbits="0" Type="0" ID="1" Sig="pcirst_n,"/>
-                <TE MaxSequence="2" MaxEvnCnt="1" ID="1" Resource="0"/>
             </Trigger>
         </Dataset>
     </Core>

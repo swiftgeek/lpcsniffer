@@ -3,9 +3,6 @@
     <Options/>
     <Implementation title="impl1" dir="impl1" description="impl1" synthesis="lse" default_strategy="TV2008">
         <Options def_top="top" top="top"/>
-        <Source name="LPC_Peri.vhd" type="VHDL" type_short="VHDL">
-            <Options/>
-        </Source>
         <Source name="top.vhd" type="VHDL" type_short="VHDL">
             <Options top_module="top"/>
         </Source>
@@ -19,6 +16,12 @@
             <Options/>
         </Source>
         <Source name="uartTx.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="lpcDefs.vhd" type="VHDL" type_short="VHDL">
+            <Options/>
+        </Source>
+        <Source name="lpcDecoder.vhd" type="VHDL" type_short="VHDL">
             <Options/>
         </Source>
         <Source name="impl1/impl1.xcf" type="Programming Project File" type_short="Programming">
