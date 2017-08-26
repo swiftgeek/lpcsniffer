@@ -1,3 +1,4 @@
+rvl_alias "osc_12m" "osc_12m";
 rvl_alias "pciclk" "pciclk";
 
 BLOCK RESETPATHS;

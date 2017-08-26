@@ -9,6 +9,7 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.numeric_std.all;
+use work.lpcDefs.all;
 
 ---------------------------------------------------------------------------
 Entity top is
@@ -37,28 +38,22 @@ end entity;
 Architecture top_1 of top is
 ---------------------------------------------------------------------------
 
-  component LPC_Peri
+  component lpcDecoder
     port (
-    -- LPC Interface
-    lclk : IN std_logic;
-    -- Clock
-    lreset_n : IN std_logic;
-    -- Reset - Active Low (Same as PCI Reset)
-    lframe_n : IN std_logic;
-    -- Frame - Active Low
-    lad_in : INOUT std_logic_vector(3 DOWNTO 0);
-    -- Address/Data Bus
-    addr_hit      : IN std_logic;
-    current_state : OUT std_logic_vector(4 DOWNTO 0);
-    din           : IN std_logic_vector(7 DOWNTO 0);
-    lpc_data_in   : OUT std_logic_vector(7 DOWNTO 0);
-    lpc_data_out  : OUT std_logic_vector(3 DOWNTO 0);
-    lpc_addr      : OUT std_logic_vector(15 DOWNTO 0);
-    lpc_en        : OUT std_logic;
-    io_rden_sm    : OUT std_logic;
-    io_wren_sm    : OUT std_logic
+  --LPC interface
+    lclk     : in std_logic;
+    lreset_n : in std_logic;
+    lframe_n : in std_logic;
+    lad      : inout std_logic_vector(3 downto 0);
+
+  --Decoded interface
+    trans_valid : out std_logic;
+    trans_start : out lpc_start_t;
+    trans_type  : out lpc_type_t;
+    trans_addr  : out std_logic_vector(15 downto 0);
+    trans_data  : out std_logic_vector(7 downto 0)
   );
-  end component LPC_Peri;
+  end component lpcDecoder;
 
   component uartTop
     port ( -- global signals
@@ -79,14 +74,6 @@ Architecture top_1 of top is
      baudClk   : out std_logic);                    -- 
   end component uartTop;
 
-  signal lpc_state : std_logic_vector(4 downto 0);
-  signal lpc_addr : std_logic_vector(15 downto 0);
-  signal lpc_din : std_logic_vector(7 downto 0);
-  signal lpc_dout : std_logic_vector(3 downto 0);
-  signal lpc_en, io_rden_sm, io_wren_sm : std_logic;
-
-  signal frame_n : std_logic;
-
   signal osc_12m_tgl, osc_pci_tgl : std_logic := '0';
 
   signal ser_txd, ser_rxd : std_logic_vector(7 downto 0);
@@ -96,48 +83,48 @@ Architecture top_1 of top is
   type state_t is (st0_idle, st1_type, st2_d0, st3_d1, st4_lf);
   signal state : state_t;
 
+  signal t_valid : std_logic;
+  signal t_start : lpc_start_t;
+  signal t_type  : lpc_type_t;
+  signal t_addr  : std_logic_vector(15 downto 0);
+  signal t_data  : std_logic_vector(7 downto 0);
+
   signal buf_addr : std_logic_vector(15 downto 0);
-  signal buf_din : std_logic_vector(7 downto 0);
-  signal buf_rd, buf_wr : std_logic;
+  signal buf_data : std_logic_vector(7 downto 0);
 
   signal pcirst : std_logic;
 
 begin
 
-  frame_n <= not frame;
   pcirst  <= not pcirst_n;
 
   --LED Mappings
   leds(0) <= osc_12m_tgl;
   leds(1) <= osc_pci_tgl;
 
-  leds(2) <= not (lpc_en and (io_rden_sm or io_wren_sm));
-  leds(3) <= '1' when (lpc_state = b"00000") else '0';
+  leds(2) <= '0' when (t_valid = '1' and (t_type = IO_RD)) else '1';
+  leds(3) <= '0' when (t_valid = '1' and (t_type = IO_WR)) else '1';
 
   leds(4) <= '1' when (state = st0_idle) else '0';
 
-  leds(7 downto 5) <= "101";
+  leds(7 downto 5) <= "011";
 
   --LPC Peripheral
-  lpc_per : LPC_Peri
+  lpc_per : lpcDecoder
   port map
   (
     --external
     lclk     => pciclk,
     lreset_n => pcirst_n,
     lframe_n => frame,
-    lad_in   => lad,
+    lad      => lad,
 
     --internal
-    addr_hit => '0',
-    current_state => lpc_state,
-    din => x"00",
-    lpc_data_in => lpc_din,
-    lpc_data_out => lpc_dout,
-    lpc_addr => lpc_addr,
-    lpc_en => lpc_en,
-    io_rden_sm => io_rden_sm,
-    io_wren_sm => io_wren_sm
+    trans_valid => t_valid,
+    trans_start => t_start,
+    trans_type  => t_type,
+    trans_addr  => t_addr,
+    trans_data  => t_data
   );
 
   process (osc_12m)
@@ -208,17 +195,15 @@ begin
         if (not ser_busy) then
           case (state) is
             when st0_idle =>
-              if (lpc_en) then
+              if (t_valid) then
                 state <= st1_type;
 
-                buf_addr <= lpc_addr;
-                buf_din  <= lpc_din;
-                buf_rd   <= io_rden_sm;
-                buf_wr   <= io_wren_sm;
+                buf_addr <= t_addr;
+                buf_data <= t_data;
 
                 ser_tx_valid <= '1';
-                ser_txd      <= x"52" when io_rden_sm = '1' else --'R'
-                                x"54" when io_wren_sm = '1' else --'W'
+                ser_txd      <= x"52" when t_type = IO_RD else --'R'
+                                x"54" when t_type = IO_WR else --'W'
                                 x"3f"; -- '?'
               end if;
             when st1_type =>
@@ -235,7 +220,7 @@ begin
               state <= st4_lf;
 
               ser_tx_valid <= '1';
-              ser_txd      <= buf_din;
+              ser_txd      <= buf_data;
             when st4_lf =>
               state <= st0_idle;
 
@@ -246,5 +231,4 @@ begin
       end if;
     end if;
   end process;
-
 end architecture top_1;
