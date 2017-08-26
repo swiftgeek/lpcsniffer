@@ -9,6 +9,7 @@ BLOCK JTAGPATHS;
 ######################
 
 LOCATE COMP "osc_12m" SITE "C8";
+LOCATE COMP "crest" SITE "B3";
 
 LOCATE COMP "leds[0]" SITE "H11";
 LOCATE COMP "leds[1]" SITE "J13";

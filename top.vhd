@@ -18,6 +18,7 @@ port
 (
   --board features
   osc_12m : in std_logic;
+  crest : in std_logic;
   leds : out std_logic_vector(7 downto 0);
   dips : in std_logic_vector(3 downto 0);
 
@@ -97,6 +98,7 @@ Architecture top_1 of top is
 
   --extra sync on reset line to reduce external influence
   signal pcirst_n_r, pcirst_n_sync : std_logic;
+  signal crst_n_r, crst_n_sync : std_logic;
 
   function nibble_to_hex (X : std_logic_vector(3 downto 0)) return std_logic_vector(7 downto 0) is
   begin
@@ -111,11 +113,19 @@ Architecture top_1 of top is
 
 begin
 
-  process (pciclk, pcirst_n)
+  process (pciclk)
   begin
     if (rising_edge(pciclk)) then
       pcirst_n_r    <= pcirst_n;
       pcirst_n_sync <= pcirst_n_r;
+    end if;
+  end process;
+
+  process (osc_12m)
+  begin
+    if (rising_edge(osc_12m)) then
+      crst_n_r    <= crest;
+      crst_n_sync <= crst_n_r;
     end if;
   end process;
 
@@ -130,7 +140,9 @@ begin
 
   leds(4) <= '1' when (state = st0_idle) else '0';
 
-  leds(7 downto 5) <= "100";
+  leds(5) <= not crst_n_sync;
+
+  leds(7 downto 6) <= "11";
 
   --LPC Peripheral
   lpc_per : lpcDecoder
@@ -150,10 +162,13 @@ begin
     trans_data  => t_data
   );
 
-  process (osc_12m)
+  process (osc_12m, crst_n_sync)
     variable cnt : integer;
   begin
-    if (rising_edge(osc_12m)) then
+    if (crst_n_sync = '0') then
+      cnt := 0;
+      osc_12m_tgl <= '0';
+    elsif (rising_edge(osc_12m)) then
       if (cnt = (12*1000*1000/2-1)) then
         cnt := 0;
         osc_12m_tgl <= not osc_12m_tgl;
@@ -163,10 +178,10 @@ begin
     end if;
   end process;
 
-  process (pciclk, pcirst_n_sync)
+  process (pciclk, pcirst_n_sync, crst_n_sync)
     variable cnt : integer;
   begin
-    if (pcirst_n_sync = '0') then
+    if (pcirst_n_sync = '0' or crst_n_sync = '0') then
       osc_pci_tgl <= '0';
       cnt := 0;
     else
@@ -204,10 +219,10 @@ begin
     baudClk => open
   );
 
-  process (pciclk, pcirst_n_sync)
+  process (pciclk, pcirst_n_sync, crst_n_sync)
     variable cnt : integer range 0 to 7;
   begin
-    if (pcirst_n_sync = '0') then
+    if (pcirst_n_sync = '0' or crst_n_sync = '0') then
       state <= st0_idle;
 
       ser_tx_valid <= '0';
