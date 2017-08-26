@@ -1,7 +1,7 @@
 <Project ModBy="Inserter" SigType="0" Name="/scratch/projects/lpcsniffer/lpcbus.rvl" Date="2017-08-26">
     <IP Version="1_5_062609"/>
     <Design DesignEntry="Schematic/VHDL" Synthesis="lse" DeviceFamily="MachXO3LF" DesignName="lpcsniffer"/>
-    <Core InsertDataset="0" Insert="1" Reveal_sig="104135889" Name="top_LA0" ID="0">
+    <Core InsertDataset="0" Insert="1" Reveal_sig="104142697" Name="top_LA0" ID="0">
         <Setting>
             <Clock SampleClk="pciclk" SampleEnable="0" EnableClk="" EnableClk_Pri="0"/>
             <TraceBuffer Implementation="0" BitTimeStamp="0" hasTimeStamp="0" IncTrigSig="0" BufferDepth="1024"/>
@@ -13,6 +13,13 @@
         <Dataset Name="Base">
             <Trace>
                 <Sig Type="SIG" Name="pcirst_n"/>
+                <Sig Type="SIG" Name="frame"/>
+                <Bus Name="lad">
+                    <Sig Type="SIG" Name="lad:0"/>
+                    <Sig Type="SIG" Name="lad:1"/>
+                    <Sig Type="SIG" Name="lad:2"/>
+                    <Sig Type="SIG" Name="lad:3"/>
+                </Bus>
                 <Bus Name="lpc_per/state">
                     <Sig Type="SIG" Name="lpc_per/state:0"/>
                     <Sig Type="SIG" Name="lpc_per/state:1"/>
@@ -32,6 +39,11 @@
                     <Sig Type="SIG" Name="t_type:0"/>
                     <Sig Type="SIG" Name="t_type:1"/>
                     <Sig Type="SIG" Name="t_type:2"/>
+                </Bus>
+                <Bus Name="state">
+                    <Sig Type="SIG" Name="state:0"/>
+                    <Sig Type="SIG" Name="state:1"/>
+                    <Sig Type="SIG" Name="state:2"/>
                 </Bus>
                 <Bus Name="t_addr">
                     <Sig Type="SIG" Name="t_addr:0"/>
@@ -61,11 +73,6 @@
                     <Sig Type="SIG" Name="t_data:6"/>
                     <Sig Type="SIG" Name="t_data:7"/>
                 </Bus>
-                <Bus Name="state">
-                    <Sig Type="SIG" Name="state:0"/>
-                    <Sig Type="SIG" Name="state:1"/>
-                    <Sig Type="SIG" Name="state:2"/>
-                </Bus>
                 <Sig Type="SIG" Name="ser_busy"/>
                 <Sig Type="SIG" Name="ser_tx_valid"/>
                 <Bus Name="ser_txd">
@@ -82,8 +89,10 @@
             <Trigger>
                 <TU Serialbits="0" Type="0" ID="1" Sig="(BUS)lpc_per/state[2:0],"/>
                 <TU Serialbits="0" Type="0" ID="2" Sig="frame,"/>
+                <TU Serialbits="0" Type="0" ID="3" Sig="(BUS)state[2:0],"/>
                 <TE MaxSequence="2" MaxEvnCnt="1" ID="1" Resource="0"/>
                 <TE MaxSequence="2" MaxEvnCnt="1" ID="2" Resource="0"/>
+                <TE MaxSequence="2" MaxEvnCnt="1" ID="3" Resource="0"/>
             </Trigger>
         </Dataset>
     </Core>

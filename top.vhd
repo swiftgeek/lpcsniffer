@@ -78,9 +78,9 @@ Architecture top_1 of top is
 
   signal ser_txd, ser_rxd : std_logic_vector(7 downto 0);
   signal ser_tx_valid, ser_rx_valid : std_logic;
-  signal ser_busy : std_logic;
+  signal ser_busy, ser_busy_r : std_logic;
 
-  type state_t is (st0_idle, st1_type, st2_d0, st3_d1, st4_lf);
+  type state_t is (st0_idle, st1_addr, st2_sep, st3_data, st4_lf);
   signal state : state_t;
 
   signal t_valid : std_logic;
@@ -107,7 +107,7 @@ begin
 
   leds(4) <= '1' when (state = st0_idle) else '0';
 
-  leds(7 downto 5) <= "011";
+  leds(7 downto 5) <= "100";
 
   --LPC Peripheral
   lpc_per : lpcDecoder
@@ -182,53 +182,89 @@ begin
   );
 
   process (pciclk, pcirst_n)
+    variable cnt : integer range 0 to 7;
   begin
     if (pcirst_n = '0') then
       state <= st0_idle;
 
       ser_tx_valid <= '0';
       ser_txd      <= x"00";
-    else
-      if (rising_edge(pciclk)) then
-        ser_tx_valid <= '0';
+      ser_busy_r   <= '0';
 
-        if (not ser_busy) then
-          case (state) is
-            when st0_idle =>
-              if (t_valid) then
-                state <= st1_type;
+      cnt := 0;
+    elsif (rising_edge(pciclk)) then
+      ser_tx_valid <= '0';
+      ser_busy_r   <= ser_busy;
 
-                buf_addr <= t_addr;
-                buf_data <= t_data;
+      case (state) is
+        when st0_idle =>
+          if (t_valid and not ser_busy) then
+            state <= st1_addr;
 
-                ser_tx_valid <= '1';
-                ser_txd      <= x"52" when t_type = IO_RD else --'R'
-                                x"54" when t_type = IO_WR else --'W'
-                                x"3f"; -- '?'
-              end if;
-            when st1_type =>
-              state <= st2_d0;
+            buf_addr <= t_addr;
+            buf_data <= t_data;
 
-              ser_tx_valid <= '1';
-              ser_txd      <= buf_addr(15 downto 8);
-            when st2_d0 =>
-              state <= st3_d1;
+            ser_tx_valid <= '1';
+            ser_txd      <= x"52" when t_type = IO_RD else --'R'
+                            x"57" when t_type = IO_WR else --'W'
+                            x"3f"; -- '?'
+            cnt := 0;
+          end if;
 
-              ser_tx_valid <= '1';
-              ser_txd      <= buf_addr(7 downto 0);
-            when st3_d1 =>
+        when st1_addr =>
+          if (ser_busy and not ser_busy_r) then
+            if (cnt = 3) then
+              state <= st2_sep;
+              cnt   := 0;
+            else
+              buf_addr(15 downto 4) <= buf_addr(11 downto 0);
+              buf_addr(3 downto 0)  <= "0000";
+              cnt := cnt + 1;
+            end if;
+          end if;
+
+          if (not ser_busy) then
+            ser_tx_valid <= '1';
+            ser_txd      <= std_logic_vector(unsigned'(x"30") + unsigned(buf_addr(15 downto 12)));
+          end if;
+
+        when st2_sep =>
+          if (ser_busy and not ser_busy_r) then
+            state <= st3_data;
+          end if;
+
+          if (not ser_busy) then
+            ser_tx_valid <= '1';
+            ser_txd      <= x"20"; --' '
+          end if;
+
+        when st3_data =>
+          if (ser_busy and not ser_busy_r) then
+            if (cnt = 1) then
               state <= st4_lf;
+              cnt   := 0;
+            else
+              buf_data(7 downto 4) <= buf_data(3 downto 0);
+              buf_data(3 downto 0) <= "0000";
+              cnt := cnt + 1;
+            end if;
+          end if;
 
-              ser_tx_valid <= '1';
-              ser_txd      <= buf_data;
-            when st4_lf =>
-              state <= st0_idle;
+          if (not ser_busy) then
+            ser_tx_valid <= '1';
+            ser_txd      <= std_logic_vector(unsigned'(x"30") + unsigned(buf_data(7 downto 4)));
+          end if;
 
-              ser_tx_valid <= '1';
-              ser_txd      <= x"0a"; --'LF'
-          end case;
-        end if;
-      end if;
+        when st4_lf =>
+          if (ser_busy and not ser_busy_r) then
+            state <= st0_idle;
+          end if;
+
+          if (not ser_busy) then
+            ser_tx_valid <= '1';
+            ser_txd      <= x"0a"; --'LF'
+          end if;
+      end case;
     end if;
   end process;
 end architecture top_1;
