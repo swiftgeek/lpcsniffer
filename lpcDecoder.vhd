@@ -3,7 +3,7 @@
 -- File          : lpcDecoder.vhd
 --
 -- Abstract : Implements LPC 1.0 transaction decoding
---
+--            Only supports 8-bit addressing (non standard)
 ---------------------------------------------------------------------------
 
 library IEEE;
@@ -27,7 +27,7 @@ port
   trans_valid : out std_logic;
   trans_start : out lpc_start_t;
   trans_type  : out lpc_type_t;
-  trans_addr  : out std_logic_vector(15 downto 0);
+  trans_addr  : out std_logic_vector(7 downto 0);
   trans_data  : out std_logic_vector(7 downto 0)
 );
 end entity;
@@ -40,7 +40,7 @@ Architecture lpcDecoder_1 of lpcDecoder is
   type state_t is (st_idle, st_type, st_size, st_tar, st_addr, st_channel, st_data);
   signal state : state_t;
 
-  signal cnt : integer range 0 to 7;
+  signal cnt : integer range 0 to 3;
 
 begin
 
@@ -105,8 +105,8 @@ begin
         --Address (IO and MEM only) 4.2.1.5
         when st_addr =>
           --shift in from bottom nibble
-          trans_addr(3 downto 0)  <= lad;
-          trans_addr(15 downto 4) <= trans_addr(11 downto 0);
+          trans_addr(3 downto 0) <= lad;
+          trans_addr(7 downto 4) <= trans_addr(3 downto 0);
           cnt <= cnt + 1;
 
           --Spec claims IO is 4 clocks, MEM is 8 clocks

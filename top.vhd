@@ -51,7 +51,7 @@ Architecture top_1 of top is
     trans_valid : out std_logic;
     trans_start : out lpc_start_t;
     trans_type  : out lpc_type_t;
-    trans_addr  : out std_logic_vector(15 downto 0);
+    trans_addr  : out std_logic_vector(7 downto 0);
     trans_data  : out std_logic_vector(7 downto 0)
   );
   end component lpcDecoder;
@@ -87,10 +87,10 @@ Architecture top_1 of top is
   signal t_valid : std_logic;
   signal t_start : lpc_start_t;
   signal t_type  : lpc_type_t;
-  signal t_addr  : std_logic_vector(15 downto 0);
+  signal t_addr  : std_logic_vector(7 downto 0);
   signal t_data  : std_logic_vector(7 downto 0);
 
-  signal buf_addr : std_logic_vector(15 downto 0);
+  signal buf_addr : std_logic_vector(7 downto 0);
   signal buf_data : std_logic_vector(7 downto 0);
   signal buf_type : lpc_type_t;
 
@@ -220,7 +220,7 @@ begin
   );
 
   process (pciclk, pcirst_n_sync, crst_n_sync)
-    variable cnt : integer range 0 to 7;
+    variable cnt : integer range 0 to 1;
   begin
     if (pcirst_n_sync = '0' or crst_n_sync = '0') then
       state <= st0_idle;
@@ -264,19 +264,19 @@ begin
 
         when st1_addr =>
           if (ser_busy and not ser_busy_r) then
-            if (cnt = 3) then
+            if (cnt = 1) then
               state <= st2_sep;
               cnt   := 0;
             else
-              buf_addr(15 downto 4) <= buf_addr(11 downto 0);
-              buf_addr(3 downto 0)  <= "0000";
+              buf_addr(7 downto 4) <= buf_addr(3 downto 0);
+              buf_addr(3 downto 0) <= "0000";
               cnt := cnt + 1;
             end if;
           end if;
 
           if (not ser_busy) then
             ser_tx_valid <= '1';
-            ser_txd      <= nibble_to_hex(buf_addr(15 downto 12));
+            ser_txd      <= nibble_to_hex(buf_addr(7 downto 4));
           end if;
 
         when st2_sep =>
